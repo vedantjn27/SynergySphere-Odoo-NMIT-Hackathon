@@ -523,22 +523,25 @@ async def delete_task(task_id: str):
     return {"message": "Task deleted successfully"}
 
 @app.post("/api/v1/tasks/{task_id}/assign", response_model=TaskOut)
-async def assign_task(task_id: str, assignee_id: str = Body(..., embed=True), current_user: dict = Depends(get_current_user)):
+async def assign_task(
+    task_id: str,
+    assignee_id: str = Body(..., embed=True),
+    current_user: dict = Depends(get_current_user)
+):
     # Update task assignee
     task = await db.tasks.find_one_and_update(
         {"_id": ObjectId(task_id)},
-        {"$set": {"assignee_id": ObjectId(assignee_id)}},
+        {"$set": {"assignee_id": assignee_id}},  # store as string
         return_document=ReturnDocument.AFTER,
     )
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    # Create notification for the assignee
+    # Add mock notification
     message = f"You have been assigned to task: {task['title']}"
-    await create_notification(user_id=assignee_id, message=message, created_by=current_user["_id"])
+    await add_notification(message=message, user_id=assignee_id)
 
     return task_doc_to_out(task)
-
 # -----------------------------
 # Communication
 # -----------------------------
@@ -607,18 +610,14 @@ async def delete_comment(comment_id: str):
 # Notifications
 # -----------------------------
 
-async def create_notification(user_id: str, message: str, created_by: str = None):
-    notif_doc = {
-        "user_id": ObjectId(user_id),
+async def add_notification(message: str, user_id: str):
+    """Add a basic notification to the notifications collection."""
+    await db.notifications.insert_one({
+        "user_id": user_id,  # just store the string, no ObjectId conversion
         "message": message,
         "read": False,
-        "created_at": datetime.now(timezone.utc),
-        "read_at": None,
-    }
-    if created_by:
-        notif_doc["created_by"] = ObjectId(created_by)
-    result = await db.notifications.insert_one(notif_doc)
-    return str(result.inserted_id)
+        "created_at": datetime.now(timezone.utc)
+    })
 
 def serialize_notification(notification: dict) -> dict:
     notification["_id"] = str(notification["_id"])
