@@ -50,19 +50,20 @@ async def init_db():
 
     await db.organizations.create_index("owner_id", name="idx_organizations_owner")
 
-    # PROJECTS COLLECTION
-    await db.create_collection("projects", validator={
-        "$jsonSchema": {
-            "bsonType": "object",
-            "required": ["name", "organization_id", "owner_id", "created_at"],
-            "properties": {
-                "name": {"bsonType": "string"},
-                "organization_id": {"bsonType": "objectId"},
-                "owner_id": {"bsonType": "objectId"},
-                "created_at": {"bsonType": "date"}
-            }
+    await db.command("collMod", "projects", validator={
+    "$jsonSchema": {
+        "bsonType": "object",
+        "required": ["name", "organization_id", "owner_id", "created_at"],
+        "properties": {
+            "name": {"bsonType": "string"},
+            "organization_id": {"bsonType": "objectId"},
+            "owner_id": {"bsonType": "objectId"},
+            "created_at": {"bsonType": "date"},
+            "status": {"bsonType": "string", "enum": ["active", "archived", "completed"]},
+            "members": {"bsonType": "array", "items": {"bsonType": "objectId"}}
         }
-    })
+    }
+})
 
     await db.projects.create_index([("organization_id", ASCENDING), ("status", ASCENDING)], name="idx_projects_org_status")
     await db.projects.create_index("owner_id", name="idx_projects_owner")
