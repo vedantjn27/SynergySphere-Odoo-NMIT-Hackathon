@@ -35,3 +35,5 @@ The Features We Provide:
 5. Communicate within each project 
 6. Visualize task progress in a clear, intuitive way 
 7. Send basic notifications for important events
+
+video link : https://youtu.be/re5wmzNlwzE
