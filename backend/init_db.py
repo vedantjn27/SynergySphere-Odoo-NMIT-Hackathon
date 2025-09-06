@@ -7,7 +7,7 @@ from bson import ObjectId
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv() 
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME", "synergysphere")
 
