@@ -16,6 +16,11 @@ from bson.errors import InvalidId
 from pymongo import ReturnDocument 
 
 load_dotenv()
+from fastapi.middleware.cors import CORSMiddleware
+
+
+# Allow all origins
+
 
 # -----------------------------
 # Config
@@ -27,7 +32,13 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 app = FastAPI(title="SynergySphere Backend")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],       # Allow all origins
+    allow_credentials=True,    # Allow cookies and auth headers
+    allow_methods=["*"],       # Allow all HTTP methods
+    allow_headers=["*"],       # Allow all headers
+)
 # -----------------------------
 # User Authentication 
 # -----------------------------
